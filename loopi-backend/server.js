@@ -14,15 +14,29 @@ const app = express();
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/loopi';
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+if (IS_PRODUCTION && !process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET is required in production");
+}
+if (IS_PRODUCTION) {
+  // Render/Heroku-style proxy so secure cookies work correctly behind TLS terminators.
+  app.set("trust proxy", 1);
+}
 
 // Allowed frontend origins — comma-separated in CORS_ORIGIN env var
 const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3000")
-  .split(",").map(s => s.trim());
+  .split(",")
+  .map(s => s.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
 
 const corsOptions = {
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.some(o => origin.startsWith(o) || o === origin)) cb(null, true);
-    else cb(new Error("Not allowed by CORS"));
+    // Allow non-browser clients (no Origin), but require exact allowlist match for browsers.
+    if (!origin) return cb(null, true);
+    const normalizedOrigin = origin.replace(/\/+$/, "");
+    if (allowedOrigins.includes(normalizedOrigin)) return cb(null, true);
+    cb(new Error("Not allowed by CORS"));
   },
   credentials: true,
 };
@@ -50,7 +64,12 @@ app.use(session({
   secret: process.env.SESSION_SECRET || "nexus-oauth-secret",
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 5 * 60 * 1000 }, // 5 minutes — just enough for the OAuth flow
+  cookie: {
+    maxAge: 5 * 60 * 1000, // 5 minutes — just enough for the OAuth flow
+    httpOnly: true,
+    secure: IS_PRODUCTION,
+    sameSite: IS_PRODUCTION ? "none" : "lax",
+  },
 }));
 app.use(passport.initialize());
 app.use(passport.session());

@@ -8,7 +8,12 @@ const User = require("../models/User");
 const router = express.Router();
 const FRONTEND_URL = process.env.FRONTEND_URL || process.env.APP_URL || "http://localhost:3000";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
-const JWT_SECRET = process.env.JWT_SECRET || "SECRETKEY";
+const JWT_SECRET = process.env.JWT_SECRET;
+const EFFECTIVE_JWT_SECRET = JWT_SECRET || "dev-insecure-jwt-secret";
+
+if (process.env.NODE_ENV === "production" && !JWT_SECRET) {
+  throw new Error("JWT_SECRET is required in production");
+}
 
 // ── Google OAuth Strategy (only if credentials are set) ───────────────────────
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -56,7 +61,7 @@ router.get("/google", (req, res, next) => {
 router.get("/google/callback",
   passport.authenticate("google", { failureRedirect: `${FRONTEND_URL}/login?error=google_failed` }),
   (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: req.user._id }, EFFECTIVE_JWT_SECRET, { expiresIn: "1d" });
     const user = { _id: req.user._id, name: req.user.name, email: req.user.email };
     const encoded = encodeURIComponent(JSON.stringify(user));
     res.redirect(`${FRONTEND_URL}/auth/callback?token=${token}&user=${encoded}`);
@@ -101,7 +106,7 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id },
-      JWT_SECRET,
+      EFFECTIVE_JWT_SECRET,
       { expiresIn: "1d" }
     );
 

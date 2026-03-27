@@ -1,5 +1,10 @@
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET || "SECRETKEY";
+const JWT_SECRET = process.env.JWT_SECRET;
+const EFFECTIVE_JWT_SECRET = JWT_SECRET || "dev-insecure-jwt-secret";
+
+if (process.env.NODE_ENV === "production" && !JWT_SECRET) {
+  throw new Error("JWT_SECRET is required in production");
+}
 
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -7,7 +12,7 @@ module.exports = (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, EFFECTIVE_JWT_SECRET);
     req.userId = decoded.id;
     next();
   } catch {
