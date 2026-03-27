@@ -16,17 +16,6 @@ const PRIORITY_COLORS = {
   "Low": "#36b37e",
 };
 
-const CustomDonutLabel = ({ cx, cy, pct }) => (
-  <>
-    <text x={cx} y={cy - 6} textAnchor="middle" fill="#172b4d" fontSize={22} fontWeight={700}>
-      {pct}%
-    </text>
-    <text x={cx} y={cy + 14} textAnchor="middle" fill="#5e6c84" fontSize={11}>
-      done
-    </text>
-  </>
-);
-
 function ProjectStatsChart({ tasks }) {
   if (!tasks || tasks.length === 0) return null;
 

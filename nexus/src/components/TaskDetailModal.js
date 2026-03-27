@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal, ModalHeader, ModalBody, ModalFooter,
   Button, Input, FormGroup, Label,
@@ -87,6 +87,14 @@ function TaskDetailModal({ task, isOpen, toggle, onSaved, onDeleted, projectId, 
 
   const { user } = useAuth();
 
+  const fetchProjectTasks = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      const res = await getTasks(projectId);
+      setProjectTasks(res.data);
+    } catch { }
+  }, [projectId]);
+
   useEffect(() => {
     if (task) {
       setTitle(task.title || "");
@@ -103,7 +111,7 @@ function TaskDetailModal({ task, isOpen, toggle, onSaved, onDeleted, projectId, 
       fetchTimeEntries(task._id);
       fetchProjectTasks();
     }
-  }, [task]);
+  }, [task, fetchProjectTasks]);
 
   // Live comment updates via socket
   useEffect(() => {
@@ -147,14 +155,6 @@ function TaskDetailModal({ task, isOpen, toggle, onSaved, onDeleted, projectId, 
       const res = await getTimeEntries(taskId);
       setTimeEntries(res.data.entries || []);
       setTimeTotal(res.data.total || 0);
-    } catch { }
-  };
-
-  const fetchProjectTasks = async () => {
-    if (!projectId) return;
-    try {
-      const res = await getTasks(projectId);
-      setProjectTasks(res.data);
     } catch { }
   };
 

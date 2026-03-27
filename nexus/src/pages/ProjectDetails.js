@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Input, Button, Row, Col } from "reactstrap";
 import { getTasks, addTask, getProjects, getMembers } from "../services/api";
@@ -36,11 +36,28 @@ function ProjectDetails() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  useEffect(() => {
-    fetchAll();
+  const fetchTasks = useCallback(async () => {
+    const res = await getTasks(id);
+    setTasks(res.data);
+    setFilteredTasks(res.data);
   }, [id]);
 
-  const fetchAll = async () => {
+  const fetchProject = useCallback(async () => {
+    try {
+      const res = await getProjects();
+      const proj = res.data.find(p => p._id === id);
+      if (proj) setProject(proj);
+    } catch { }
+  }, [id]);
+
+  const fetchMembers = useCallback(async () => {
+    try {
+      const res = await getMembers(id);
+      setMembers(res.data);
+    } catch { }
+  }, [id]);
+
+  const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
       setLoadError("");
@@ -51,28 +68,11 @@ function ProjectDetails() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchMembers, fetchProject, fetchTasks]);
 
-  const fetchTasks = async () => {
-    const res = await getTasks(id);
-    setTasks(res.data);
-    setFilteredTasks(res.data);
-  };
-
-  const fetchProject = async () => {
-    try {
-      const res = await getProjects();
-      const proj = res.data.find(p => p._id === id);
-      if (proj) setProject(proj);
-    } catch { }
-  };
-
-  const fetchMembers = async () => {
-    try {
-      const res = await getMembers(id);
-      setMembers(res.data);
-    } catch { }
-  };
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const handleAdd = async () => {
     if (!title.trim()) return;

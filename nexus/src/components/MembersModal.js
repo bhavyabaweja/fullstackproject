@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Modal, ModalHeader, ModalBody, Input, Button } from "reactstrap";
 import { getMembers, inviteMember, removeMember } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -20,14 +20,14 @@ function MembersModal({ isOpen, toggle, projectId, projectOwnerId }) {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (isOpen && projectId) fetchMembers();
-  }, [isOpen, projectId]);
-
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     const res = await getMembers(projectId);
     setMembers(res.data);
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    if (isOpen && projectId) fetchMembers();
+  }, [isOpen, projectId, fetchMembers]);
 
   const handleInvite = async () => {
     if (!email.trim()) return;

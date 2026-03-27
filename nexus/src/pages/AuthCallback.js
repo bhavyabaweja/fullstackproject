@@ -26,7 +26,7 @@ function AuthCallback() {
     } catch {
       navigate("/login?error=google_failed", { replace: true });
     }
-  }, []);
+  }, [login, navigate, params]);
 
   return null;
 }
