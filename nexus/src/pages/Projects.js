@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input, FormGroup, Label } from "reactstrap";
 import { getProjects, addProject, deleteProject, updateProject, getTasks } from "../services/api";
 import { ProjectCardSkeleton } from "../components/SkeletonLoader";
 
@@ -60,9 +60,9 @@ function Projects() {
     <div>
       <div className="page-header">
         <h2>Projects</h2>
-        <Button color="primary" onClick={() => setModalOpen(true)} className="btn-add-project">
+        <button className="btn btn-primary btn-add-project" onClick={() => setModalOpen(true)}>
           + New project
-        </Button>
+        </button>
       </div>
 
       <div className="project-grid">
@@ -73,9 +73,7 @@ function Projects() {
             <div className="empty-state-icon">🗂️</div>
             <div className="empty-state-title">No projects yet</div>
             <div className="empty-state-subtitle">Create your first project to start organizing tasks</div>
-            <button className="btn btn-primary mt-3" onClick={() => setModalOpen(true)}>
-              + Create first project
-            </button>
+            <button className="btn btn-primary mt-3" onClick={() => setModalOpen(true)}>+ Create first project</button>
           </div>
         ) : (
           projects.map((p) => (
@@ -121,26 +119,27 @@ function Projects() {
         )}
       </div>
 
-      {/* New Project Modal */}
-      <Modal isOpen={modalOpen} toggle={() => setModalOpen(false)}>
-        <ModalHeader toggle={() => setModalOpen(false)}>New project</ModalHeader>
-        <ModalBody>
-          <FormGroup>
-            <Label>Project name</Label>
-            <Input
+      {/* New Project Modal — Fluid Glassmorphism */}
+      {modalOpen && createPortal(
+        <div className="fluid-modal-overlay" onClick={(e) => e.target === e.currentTarget && setModalOpen(false)}>
+          <div className="fluid-modal">
+            <p className="fluid-modal-title">New project</p>
+            <input
+              className="fluid-input"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. Website Redesign"
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
               autoFocus
             />
-          </FormGroup>
-        </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" outline onClick={() => setModalOpen(false)}>Cancel</Button>
-          <Button color="primary" onClick={handleAdd}>Create</Button>
-        </ModalFooter>
-      </Modal>
+            <div className="fluid-modal-actions">
+              <button className="btn btn-outline-secondary" onClick={() => setModalOpen(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleAdd}>Create</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

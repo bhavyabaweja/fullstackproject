@@ -277,7 +277,7 @@ function TaskDetailModal({ task, isOpen, toggle, onSaved, onDeleted, projectId, 
   if (!task) return null;
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} size="lg">
+    <Modal isOpen={isOpen} toggle={toggle} size="lg" modalClassName="fluid-task-modal">
       <ModalHeader toggle={toggle}>
         <span className={PRIORITY_BADGE[priority]}>{priority}</span>{" "}Task Details
       </ModalHeader>

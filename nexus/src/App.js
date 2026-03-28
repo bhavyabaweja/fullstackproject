@@ -66,7 +66,7 @@ function AppLayout() {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="main-content">
-        <header className="topbar">
+        <header className="topbar" role="banner">
           <div className="topbar-left">
             <button className="hamburger-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -110,7 +110,7 @@ function AppLayout() {
           </div>
         </header>
 
-        <main className="page-content">
+        <main className="page-content" role="main">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
