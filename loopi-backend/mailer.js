@@ -1,28 +1,20 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const FRONTEND_URL = process.env.FRONTEND_URL || process.env.APP_URL || "http://localhost:3000";
+const FROM_EMAIL = process.env.FROM_EMAIL || "onboarding@resend.dev";
 
-// Create transporter lazily — returns null if SMTP is not configured
-function getTransporter() {
-    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-    if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-        return null;
-    }
-    return nodemailer.createTransport({
-        host: SMTP_HOST,
-        port: parseInt(SMTP_PORT || "587", 10),
-        secure: parseInt(SMTP_PORT || "587", 10) === 465,
-        auth: { user: SMTP_USER, pass: SMTP_PASS },
-    });
+function getResend() {
+    if (!process.env.RESEND_API_KEY) return null;
+    return new Resend(process.env.RESEND_API_KEY);
 }
 
 async function sendInviteEmail(toEmail, projectName, inviterName) {
-    const transporter = getTransporter();
-    if (!transporter) {
-        console.log("[mailer] SMTP not configured — skipping invite email");
+    const resend = getResend();
+    if (!resend) {
+        console.log("[mailer] RESEND_API_KEY not configured — skipping invite email");
         return;
     }
-    await transporter.sendMail({
-        from: process.env.FROM_EMAIL || process.env.SMTP_USER,
+    await resend.emails.send({
+        from: `Nexus <${FROM_EMAIL}>`,
         to: toEmail,
         subject: `You've been invited to "${projectName}" on Nexus`,
         html: `
@@ -40,13 +32,13 @@ async function sendInviteEmail(toEmail, projectName, inviterName) {
 }
 
 async function sendAssignmentEmail(toEmail, taskTitle, assignerName, projectName) {
-    const transporter = getTransporter();
-    if (!transporter) {
-        console.log("[mailer] SMTP not configured — skipping assignment email");
+    const resend = getResend();
+    if (!resend) {
+        console.log("[mailer] RESEND_API_KEY not configured — skipping assignment email");
         return;
     }
-    await transporter.sendMail({
-        from: process.env.FROM_EMAIL || process.env.SMTP_USER,
+    await resend.emails.send({
+        from: `Nexus <${FROM_EMAIL}>`,
         to: toEmail,
         subject: `Task assigned to you: "${taskTitle}"`,
         html: `
