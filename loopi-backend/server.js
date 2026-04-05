@@ -36,6 +36,7 @@ const corsOptions = {
     if (!origin) return cb(null, true);
     const normalizedOrigin = origin.replace(/\/+$/, "");
     if (allowedOrigins.includes(normalizedOrigin)) return cb(null, true);
+    console.error(`[cors] blocked origin: "${origin}" | allowed: ${JSON.stringify(allowedOrigins)}`);
     cb(new Error("Not allowed by CORS"));
   },
   credentials: true,
