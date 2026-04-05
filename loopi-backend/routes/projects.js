@@ -76,19 +76,7 @@ router.post("/:id/invite", auth, async (req, res) => {
     });
     const populated = await member.populate("userId", "name email");
 
-    // Email notification (fire-and-forget)
-    try {
-      const { sendInviteEmail } = require("../mailer");
-      const project = await Project.findById(req.params.id);
-      const inviter = await User.findById(req.userId);
-      if (user.email && project) {
-        sendInviteEmail(user.email, project.name, inviter?.name || "Someone").catch((err) => {
-          console.error("[mailer] invite email failed:", err.message || err);
-        });
-      }
-    } catch (_) { }
-
-    res.json(populated);
+res.json(populated);
   } catch (err) {
     res.status(500).json({ error: "Failed to invite member" });
   }

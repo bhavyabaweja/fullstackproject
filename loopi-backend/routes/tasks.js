@@ -98,24 +98,6 @@ router.put("/:id", auth, async (req, res) => {
         });
       }
 
-      // Email notification on new assignment (fire-and-forget)
-      if (afterAssignee && afterAssignee !== req.userId) {
-        try {
-          const { sendAssignmentEmail } = require("../mailer");
-          const User = require("../models/User");
-          const assignee = await User.findById(afterAssignee);
-          const project = await Project.findById(updated.projectId);
-          const actor = await User.findById(req.userId);
-          if (assignee?.email) {
-            sendAssignmentEmail(
-              assignee.email,
-              updated.title,
-              actor?.name || "Someone",
-              project?.name || "a project"
-            ).catch(() => { });
-          }
-        } catch (_) { }
-      }
     }
 
     const io = req.app.get("io");
