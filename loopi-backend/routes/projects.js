@@ -82,7 +82,9 @@ router.post("/:id/invite", auth, async (req, res) => {
       const project = await Project.findById(req.params.id);
       const inviter = await User.findById(req.userId);
       if (user.email && project) {
-        sendInviteEmail(user.email, project.name, inviter?.name || "Someone").catch(() => { });
+        sendInviteEmail(user.email, project.name, inviter?.name || "Someone").catch((err) => {
+          console.error("[mailer] invite email failed:", err.message || err);
+        });
       }
     } catch (_) { }
 
