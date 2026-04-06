@@ -26,6 +26,7 @@ function TaskCard({ task, index, onClick }) {
     task.dueDate && task.status !== "Completed" && new Date(task.dueDate) < new Date();
 
   const assigneeName = task.assigneeId?.name || null;
+  const creatorName = task.createdBy?.name || null;
   const subtaskCount = task.subtasks?.length || 0;
   const subtaskDone = task.subtasks?.filter(s => s.done).length || 0;
   const isBlocked = task.blockedBy && task.blockedBy.length > 0;
@@ -88,6 +89,13 @@ function TaskCard({ task, index, onClick }) {
                 {isOverdue ? "⚠ " : ""}
                 {formatDate(task.dueDate)}
               </span>
+            )}
+
+            {creatorName && (
+              <div className="task-card-creator" title={`Created by ${creatorName}`}>
+                <span className="task-card-creator-icon">✦</span>
+                <span className="task-card-creator-name">{creatorName}</span>
+              </div>
             )}
 
             {assigneeName && (

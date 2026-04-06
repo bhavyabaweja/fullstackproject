@@ -14,6 +14,7 @@ router.get("/all", auth, async (req, res) => {
     const allIds = [...new Set([...memberProjectIds.map(String), ...ownedProjectIds.map(String)])];
     const tasks = await Task.find({ projectId: { $in: allIds } })
       .populate("assigneeId", "name")
+      .populate("createdBy", "name")
       .populate("blockedBy", "title status");
     res.json(tasks);
   } catch (err) {
@@ -26,6 +27,7 @@ router.get("/:projectId", auth, async (req, res) => {
   try {
     const tasks = await Task.find({ projectId: req.params.projectId })
       .populate("assigneeId", "name")
+      .populate("createdBy", "name")
       .populate("blockedBy", "title status");
     res.json(tasks);
   } catch (err) {
@@ -36,9 +38,12 @@ router.get("/:projectId", auth, async (req, res) => {
 // ADD task
 router.post("/", auth, async (req, res) => {
   try {
-    const task = new Task(req.body);
+    const task = new Task({ ...req.body, createdBy: req.userId });
     await task.save();
-    const populated = await task.populate("assigneeId", "name");
+    const populated = await task.populate([
+      { path: "assigneeId", select: "name" },
+      { path: "createdBy", select: "name" },
+    ]);
 
     await ActivityLog.create({
       taskId: task._id,
@@ -62,6 +67,7 @@ router.put("/:id", auth, async (req, res) => {
     const before = await Task.findById(req.params.id).populate("assigneeId", "name");
     const updated = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true })
       .populate("assigneeId", "name")
+      .populate("createdBy", "name")
       .populate("blockedBy", "title status");
 
     // Detect field changes and log them
